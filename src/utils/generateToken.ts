@@ -6,3 +6,9 @@ export function generateToken(adminId: string): string {
     expiresIn: "7d",
   });
 }
+
+export function generateCustomerToken(customerId: string): string {
+  return jwt.sign({ id: customerId, role: "customer" }, env.jwtSecret, {
+    expiresIn: "7d",
+  });
+}
