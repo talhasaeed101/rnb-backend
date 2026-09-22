@@ -6,13 +6,18 @@ import { Admin } from "../models/Admin.js";
 async function seed() {
   await connectDatabase();
   const email = env.admin.email.toLowerCase();
+  const passwordHash = await bcrypt.hash(env.admin.password, 12);
   const existing = await Admin.findOne({ email });
+
   if (existing) {
-    console.log(`Admin already exists: ${email}`);
+    existing.passwordHash = passwordHash;
+    existing.name = env.admin.name;
+    existing.status = "active";
+    await existing.save();
+    console.log(`Admin password updated: ${email}`);
     process.exit(0);
   }
 
-  const passwordHash = await bcrypt.hash(env.admin.password, 12);
   await Admin.create({
     name: env.admin.name,
     email,

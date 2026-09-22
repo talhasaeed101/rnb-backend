@@ -10,6 +10,18 @@ function required(name: string, fallback?: string): string {
   return value;
 }
 
+function parseOrigins(...values: Array<string | undefined>): string[] {
+  const origins = new Set<string>();
+  for (const value of values) {
+    if (!value) continue;
+    for (const part of value.split(",")) {
+      const origin = part.trim().replace(/\/$/, "");
+      if (origin) origins.add(origin);
+    }
+  }
+  return [...origins];
+}
+
 export const env = {
   nodeEnv: process.env.NODE_ENV || "development",
   port: Number(process.env.PORT || 5000),
@@ -17,6 +29,12 @@ export const env = {
   jwtSecret: required("JWT_SECRET", "dev-secret-change-me"),
   clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
   adminUrl: process.env.ADMIN_URL || "http://localhost:5173",
+  /** Comma-separated CORS allowlist (CLIENT_URL, ADMIN_URL, ALLOWED_ORIGINS). */
+  allowedOrigins: parseOrigins(
+    process.env.ALLOWED_ORIGINS,
+    process.env.CLIENT_URL || "http://localhost:5173",
+    process.env.ADMIN_URL || "http://localhost:5173",
+  ),
   r2: {
     accountId: process.env.R2_ACCOUNT_ID || "",
     accessKeyId: process.env.R2_ACCESS_KEY_ID || "",

@@ -15,17 +15,24 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 
 const app = express();
 
-const allowedOrigins = [env.clientUrl, env.adminUrl].filter(Boolean);
+const allowedOrigins = env.allowedOrigins;
 
-app.use(helmet());
+app.use(
+  helmet({
+    // Browser admin/client apps call this API from other origins.
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }),
+);
 app.use(
   cors({
     origin(origin, callback) {
+      // Non-browser clients (curl, server-to-server) send no Origin.
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
-      } else {
-        callback(new Error(`CORS blocked for origin: ${origin}`));
+        return;
       }
+      // Reject without throwing — thrown errors become 500s without CORS headers.
+      callback(null, false);
     },
     credentials: true,
   }),
