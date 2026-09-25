@@ -4,6 +4,7 @@ import { AppError } from "../middleware/errorMiddleware.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { success } from "../utils/apiResponse.js";
 import { slugify } from "../utils/slugify.js";
+import { productCategoryFilter } from "../services/categoryService.js";
 
 function mapProduct(doc: any) {
   const obj = doc.toObject ? doc.toObject() : doc;
@@ -67,7 +68,7 @@ export const listProducts = asyncHandler(async (req, res) => {
       { category: { $regex: search, $options: "i" } },
     ];
   }
-  if (category) filter.category = category;
+  if (category) Object.assign(filter, await productCategoryFilter(category));
   if (collection) filter.collection = collection;
   if (status) filter.status = status;
 

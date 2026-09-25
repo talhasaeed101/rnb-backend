@@ -7,9 +7,18 @@ const categorySchema = new Schema(
     description: { type: String, default: "" },
     image: { type: String, default: "" },
     status: { type: String, enum: ["active", "inactive"], default: "active", index: true },
+    parentId: {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
+      default: null,
+      index: true,
+    },
+    sortOrder: { type: Number, default: 0, index: true },
   },
   { timestamps: true },
 );
+
+categorySchema.index({ parentId: 1, name: 1 });
 
 export type CategoryDocument = InferSchemaType<typeof categorySchema> & {
   _id: mongoose.Types.ObjectId;
