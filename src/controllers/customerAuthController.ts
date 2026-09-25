@@ -184,7 +184,16 @@ export const login = asyncHandler(async (req, res) => {
   }
 
   if (!customer.emailVerified) {
-    throw new AppError("Email not verified", 403);
+    try {
+      await issueVerificationOtp(customer);
+    } catch (error) {
+      console.error("Failed to send verification email on login:", {
+        message: error instanceof Error ? error.message : "unknown",
+      });
+    }
+    throw new AppError("Email not verified. A new verification code has been sent.", 403, [
+      { errorCode: "EMAIL_NOT_VERIFIED" },
+    ]);
   }
 
   const token = generateCustomerToken(customer._id.toString());
