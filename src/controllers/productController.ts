@@ -169,9 +169,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
 });
 
 export const deleteProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findByIdAndDelete(req.params.id);
   if (!product) throw new AppError("Product not found", 404);
-  product.status = "inactive";
-  await product.save();
-  return success(res, mapProduct(product));
+  return success(res, { id: String(product._id), deleted: true });
 });
