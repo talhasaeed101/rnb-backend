@@ -41,7 +41,13 @@ export const createCategory = asyncHandler(async (req, res) => {
   const slug = slugify(body.slug || body.name);
   const exists = await Category.findOne({ slug });
   if (exists) throw new AppError("Category slug already exists", 409);
-  const item = await Category.create({ ...body, slug });
+  const item = await Category.create({
+    name: body.name,
+    slug,
+    description: body.description || "",
+    image: "",
+    status: body.status || "active",
+  });
   return success(res, await mapCategory(item), 201);
 });
 
@@ -57,16 +63,13 @@ export const updateCategory = asyncHandler(async (req, res) => {
   }
   if (body.name !== undefined) item.name = body.name;
   if (body.description !== undefined) item.description = body.description;
-  if (body.image !== undefined) item.image = body.image;
   if (body.status !== undefined) item.status = body.status;
   await item.save();
   return success(res, await mapCategory(item));
 });
 
 export const deleteCategory = asyncHandler(async (req, res) => {
-  const item = await Category.findById(req.params.id);
+  const item = await Category.findByIdAndDelete(req.params.id);
   if (!item) throw new AppError("Category not found", 404);
-  item.status = "inactive";
-  await item.save();
-  return success(res, await mapCategory(item));
+  return success(res, { id: String(item._id), deleted: true });
 });
