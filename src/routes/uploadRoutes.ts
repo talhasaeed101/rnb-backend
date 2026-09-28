@@ -17,15 +17,7 @@ const videoUpload = multer({
 
 const router = Router();
 router.use(protect);
-router.post(
-  "/images",
-  imageUpload.fields([
-    { name: "images", maxCount: MAX_IMAGE_FILES },
-    { name: "image", maxCount: MAX_IMAGE_FILES },
-    { name: "files", maxCount: MAX_IMAGE_FILES },
-  ]),
-  uploadController.uploadImages,
-);
+router.post("/images", imageUpload.any(), uploadController.uploadImages);
 router.post("/videos", videoUpload.single("video"), uploadController.uploadVideo);
 router.delete("/images", uploadController.deleteImage);
 router.delete("/videos", uploadController.deleteVideo);
