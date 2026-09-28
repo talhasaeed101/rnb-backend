@@ -69,6 +69,12 @@ function isProductVideoKey(publicId: string): boolean {
   return publicId.startsWith(VIDEO_PREFIX) && publicId.length > VIDEO_PREFIX.length;
 }
 
+function isAllowedImage(file: Express.Multer.File): boolean {
+  if (IMAGE_MIME_TO_EXT[file.mimetype]) return true;
+  const ext = path.extname(file.originalname).replace(".", "").toLowerCase();
+  return ["jpg", "jpeg", "png", "webp", "gif"].includes(ext);
+}
+
 function collectImageFiles(req: { files?: unknown; file?: Express.Multer.File }): Express.Multer.File[] {
   if (Array.isArray(req.files)) return req.files;
   if (req.files && typeof req.files === "object") {
@@ -80,14 +86,12 @@ function collectImageFiles(req: { files?: unknown; file?: Express.Multer.File })
 
 export const uploadImages = asyncHandler(async (req, res: Response) => {
   assertR2Configured();
-  const files = collectImageFiles(req);
-  if (!files.length) throw new AppError("No images uploaded", 400);
+  const incoming = collectImageFiles(req);
+  if (!incoming.length) throw new AppError("No images uploaded", 400);
 
-  const allowed = Object.keys(IMAGE_MIME_TO_EXT);
-  for (const file of files) {
-    if (!allowed.includes(file.mimetype)) {
-      throw new AppError(`Unsupported image type: ${file.mimetype}`, 400);
-    }
+  const files = incoming.filter(isAllowedImage);
+  if (!files.length) {
+    throw new AppError("Unsupported image type. Use JPEG, PNG, WebP, or GIF.", 400);
   }
 
   const client = getR2Client();
@@ -100,12 +104,15 @@ export const uploadImages = asyncHandler(async (req, res: Response) => {
         Bucket: env.r2.bucketName,
         Key: publicId,
         Body: file.buffer,
-        ContentType: file.mimetype,
+        ContentType: file.mimetype || "application/octet-stream",
       }),
     );
 
     const format =
-      IMAGE_MIME_TO_EXT[file.mimetype] || file.mimetype.split("/")[1] || "";
+      IMAGE_MIME_TO_EXT[file.mimetype] ||
+      path.extname(file.originalname).replace(".", "").toLowerCase() ||
+      file.mimetype.split("/")[1] ||
+      "";
     uploaded.push({
       url: getR2PublicUrl(publicId),
       publicId,
