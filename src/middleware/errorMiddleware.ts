@@ -41,7 +41,28 @@ export function errorHandler(
     });
   }
 
-  // Mongoose duplicate key
+  // Multer (multipart uploads)
+  if (
+    typeof err === "object" &&
+    err &&
+    "name" in err &&
+    (err as { name?: string }).name === "MulterError"
+  ) {
+    const code = (err as { code?: string }).code;
+    const message =
+      code === "LIMIT_FILE_COUNT"
+        ? "Too many images in one upload (max 24)"
+        : code === "LIMIT_FILE_SIZE"
+          ? "An image is larger than 10MB"
+          : code === "LIMIT_UNEXPECTED_FILE"
+            ? "Unexpected upload field. Use images, image, or files."
+            : "Image upload failed";
+    return res.status(400).json({
+      success: false,
+      message,
+      errors: [{ code }],
+    });
+  }
   if (
     typeof err === "object" &&
     err &&

@@ -67,9 +67,18 @@ function isProductVideoKey(publicId: string): boolean {
   return publicId.startsWith(VIDEO_PREFIX) && publicId.length > VIDEO_PREFIX.length;
 }
 
+function collectImageFiles(req: { files?: unknown; file?: Express.Multer.File }): Express.Multer.File[] {
+  if (Array.isArray(req.files)) return req.files;
+  if (req.files && typeof req.files === "object") {
+    return Object.values(req.files as Record<string, Express.Multer.File[]>).flat();
+  }
+  if (req.file) return [req.file];
+  return [];
+}
+
 export const uploadImages = asyncHandler(async (req, res: Response) => {
   assertR2Configured();
-  const files = (req.files as Express.Multer.File[]) || [];
+  const files = collectImageFiles(req);
   if (!files.length) throw new AppError("No images uploaded", 400);
 
   const allowed = Object.keys(IMAGE_MIME_TO_EXT);
@@ -82,8 +91,7 @@ export const uploadImages = asyncHandler(async (req, res: Response) => {
   const client = getR2Client();
   const uploaded = [];
 
-  // Preserve multer array order (admin gallery order)
-  for (const file of files) {
+  for (const [index, file] of files.entries()) {
     const publicId = buildImageKey(file);
     await client.send(
       new PutObjectCommand({
@@ -103,10 +111,18 @@ export const uploadImages = asyncHandler(async (req, res: Response) => {
       height: null,
       format,
       bytes: file.size,
+      originalName: file.originalname,
+      mimeType: file.mimetype,
+      alt: "",
+      isMain: index === 0,
+      sortOrder: index,
     });
   }
 
-  return success(res, uploaded, 201);
+  return success(res, uploaded, 201, {
+    count: uploaded.length,
+    images: uploaded,
+  });
 });
 
 export const uploadVideo = asyncHandler(async (req, res: Response) => {

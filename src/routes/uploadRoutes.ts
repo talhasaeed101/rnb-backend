@@ -3,9 +3,11 @@ import multer from "multer";
 import * as uploadController from "../controllers/uploadController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
+const MAX_IMAGE_FILES = 24;
+
 const imageUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB per image
+  limits: { fileSize: 10 * 1024 * 1024, files: MAX_IMAGE_FILES },
 });
 
 const videoUpload = multer({
@@ -15,7 +17,15 @@ const videoUpload = multer({
 
 const router = Router();
 router.use(protect);
-router.post("/images", imageUpload.array("images", 12), uploadController.uploadImages);
+router.post(
+  "/images",
+  imageUpload.fields([
+    { name: "images", maxCount: MAX_IMAGE_FILES },
+    { name: "image", maxCount: MAX_IMAGE_FILES },
+    { name: "files", maxCount: MAX_IMAGE_FILES },
+  ]),
+  uploadController.uploadImages,
+);
 router.post("/videos", videoUpload.single("video"), uploadController.uploadVideo);
 router.delete("/images", uploadController.deleteImage);
 router.delete("/videos", uploadController.deleteVideo);
