@@ -44,6 +44,24 @@ function mapProduct(doc: any) {
       options: v.options || [],
     })),
     sizes: obj.sizes || [],
+    colorVariants: (obj.colorVariants || []).map((cv: any, index: number) => ({
+      id: cv.id || `color-${index}`,
+      colorName: cv.colorName,
+      colorCode: cv.colorCode,
+      sortOrder: cv.sortOrder ?? index,
+      images: (cv.images || []).map((img: any, imgIndex: number) => ({
+        id: img.publicId || `${cv.id || `color-${index}`}-img-${imgIndex}`,
+        url: img.url,
+        publicId: img.publicId || "",
+        width: img.width,
+        height: img.height,
+        format: img.format,
+        bytes: img.bytes,
+        alt: `${cv.colorName} image ${imgIndex + 1}`,
+        isMain: imgIndex === 0,
+        sortOrder: imgIndex,
+      })),
+    })),
     createdAt: obj.createdAt,
     updatedAt: obj.updatedAt,
   };
@@ -150,6 +168,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
     "stock",
     "status",
     "sizes",
+    "colorVariants",
   ] as const;
 
   for (const key of fields) {

@@ -26,6 +26,25 @@ const variationSchema = z.object({
   options: z.array(z.string()).default([]),
 });
 
+const colorVariantImageSchema = z.object({
+  url: z.string().url(),
+  publicId: z.string().optional().default(""),
+  width: z.number().nullable().optional(),
+  height: z.number().nullable().optional(),
+  format: z.string().optional(),
+  bytes: z.number().optional(),
+});
+
+const hexColorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+
+const colorVariantSchema = z.object({
+  id: z.string().min(1),
+  colorName: z.string().min(1).max(60).trim(),
+  colorCode: z.string().regex(hexColorRegex, "Invalid color code. Use #RRGGBB or #RGB format."),
+  images: z.array(colorVariantImageSchema).default([]),
+  sortOrder: z.number().int().nonnegative().optional().default(0),
+});
+
 export const productBodySchema = z.object({
   name: z.string().min(1),
   slug: z.string().min(1).optional(),
@@ -45,6 +64,7 @@ export const productBodySchema = z.object({
   status: z.enum(["active", "inactive", "draft"]).optional().default("draft"),
   variations: z.array(variationSchema).optional().default([]),
   sizes: z.array(z.string()).optional().default([]),
+  colorVariants: z.array(colorVariantSchema).optional().default([]),
 });
 
 export const productQuerySchema = z.object({

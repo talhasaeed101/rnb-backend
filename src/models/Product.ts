@@ -32,6 +32,29 @@ const variationSchema = new Schema(
   { _id: false },
 );
 
+const colorVariantImageSchema = new Schema(
+  {
+    url: { type: String, required: true },
+    publicId: { type: String, default: "" },
+    width: { type: Number },
+    height: { type: Number },
+    format: { type: String },
+    bytes: { type: Number },
+  },
+  { _id: false },
+);
+
+const colorVariantSchema = new Schema(
+  {
+    id: { type: String, required: true },
+    colorName: { type: String, required: true, trim: true },
+    colorCode: { type: String, required: true, match: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/ },
+    images: { type: [colorVariantImageSchema], default: [] },
+    sortOrder: { type: Number, default: 0 },
+  },
+  { _id: false },
+);
+
 const productSchema = new Schema(
   {
     name: { type: String, required: true, trim: true, index: true },
@@ -57,6 +80,7 @@ const productSchema = new Schema(
     },
     variations: { type: [variationSchema], default: [] },
     sizes: { type: [String], default: [] },
+    colorVariants: { type: [colorVariantSchema], default: [] },
   },
   { timestamps: true },
 );
