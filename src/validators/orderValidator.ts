@@ -34,6 +34,10 @@ export const orderBodySchema = z.object({
     .enum(["pending", "paid", "failed", "refunded"])
     .optional()
     .default("pending"),
+  paymentMethod: z
+    .enum(["cod", "bank_transfer"])
+    .optional()
+    .default("cod"),
   orderStatus: z
     .enum([
       "pending",

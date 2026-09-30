@@ -115,3 +115,69 @@ export async function sendPasswordResetEmail(options: {
     text: `Hi ${options.name || "there"}, your RNB Collections password reset code is ${options.otp}. It expires in about 10 minutes.`,
   });
 }
+
+export async function sendOrderEmail(options: {
+  to: string;
+  name: string;
+  orderNumber: string;
+  status: string;
+  total: number;
+}) {
+  const safeName = escapeHtml(options.name || "Customer");
+  const html = brandWrapper(
+    `Order ${options.status}: ${options.orderNumber}`,
+    `
+      <p style="margin:0 0 12px;font-size:16px;">Hi ${safeName},</p>
+      <p style="margin:0 0 16px;font-size:14px;line-height:1.5;color:#333;">
+        Your order <strong>${options.orderNumber}</strong> status is now: <strong>${options.status}</strong>.
+      </p>
+      <p style="margin:0 0 16px;font-size:14px;line-height:1.5;color:#333;">
+        Total: Rs. ${options.total.toLocaleString()}
+      </p>
+    `,
+  );
+  try {
+    await sendMail({
+      to: options.to,
+      subject: `Order ${options.status}: ${options.orderNumber}`,
+      html,
+      text: `Hi ${safeName}, your order ${options.orderNumber} is now ${options.status}. Total: Rs. ${options.total}`,
+    });
+  } catch (err) {
+    console.error("Order email error:", err);
+  }
+}
+
+export async function sendAdminOrderEmail(options: {
+  orderNumber: string;
+  customerName: string;
+  paymentMethod: string;
+  total: number;
+  itemsCount: number;
+}) {
+  const adminEmail = env.admin.email;
+  const html = brandWrapper(
+    `New Order Received: ${options.orderNumber}`,
+    `
+      <p style="margin:0 0 12px;font-size:16px;">Hello Admin,</p>
+      <p style="margin:0 0 16px;font-size:14px;line-height:1.5;color:#333;">
+        A new order <strong>${options.orderNumber}</strong> was placed by ${options.customerName}.
+      </p>
+      <ul>
+        <li>Payment: ${options.paymentMethod}</li>
+        <li>Total: Rs. ${options.total.toLocaleString()}</li>
+        <li>Items: ${options.itemsCount}</li>
+      </ul>
+    `,
+  );
+  try {
+    await sendMail({
+      to: adminEmail,
+      subject: `New Order: ${options.orderNumber}`,
+      html,
+      text: `New order ${options.orderNumber} by ${options.customerName}.`,
+    });
+  } catch (err) {
+    console.error("Admin order email error:", err);
+  }
+}

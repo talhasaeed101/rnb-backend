@@ -44,6 +44,11 @@ const orderSchema = new Schema(
       default: "pending",
       index: true,
     },
+    paymentMethod: {
+      type: String,
+      enum: ["cod", "bank_transfer"],
+      default: "cod",
+    },
     orderStatus: {
       type: String,
       enum: [

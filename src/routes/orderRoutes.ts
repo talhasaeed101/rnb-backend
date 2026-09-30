@@ -11,12 +11,16 @@ import {
 
 const router = Router();
 
+// Public route for checkout
+router.post("/", validateBody(orderBodySchema), orderController.createOrder);
+router.get("/:id", orderController.getOrder); // Also make get order public for success page
+
+// Admin only routes
 router.use(protect);
 router.get("/", validateQuery(orderQuerySchema), orderController.listOrders);
-router.get("/:id", orderController.getOrder);
-router.post("/", validateBody(orderBodySchema), orderController.createOrder);
 router.put("/:id", orderController.updateOrder);
 router.patch("/:id/status", validateBody(orderStatusSchema), orderController.updateOrderStatus);
+router.patch("/:id/verify-payment", orderController.verifyPayment);
 router.patch("/:id/dispatch", validateBody(dispatchSchema), orderController.dispatchOrder);
 
 export default router;
