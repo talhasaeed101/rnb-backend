@@ -20,6 +20,8 @@ export const CATEGORY_CATALOG: CategoryCatalogNode[] = [
       "Leather Bags",
     ],
   },
+
+  
   {
     name: "Bottles",
     children: ["Water Bottles", "Gym Bottles"],
