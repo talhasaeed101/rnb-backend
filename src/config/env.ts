@@ -35,6 +35,8 @@ export const env = {
     process.env.ADMIN_URL || "http://localhost:5173",
     "http://localhost:3000",
     "https://rnb-collection.vercel.app",
+    "https://www.rnbcollections.com",
+    "https://rnbcollections.com",
   ),
   smtp: {
     host: process.env.SMTP_HOST || "",
