@@ -4,15 +4,22 @@ import * as uploadController from "../controllers/uploadController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const MAX_IMAGE_FILES = 24;
+const MAX_IMAGE_BYTES_PER_FILE = 20 * 1024 * 1024;
+const MAX_IMAGE_AGGREGATE_BYTES = 40 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 150 * 1024 * 1024;
 
 const imageUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024, files: MAX_IMAGE_FILES },
+  limits: {
+    fileSize: MAX_IMAGE_BYTES_PER_FILE,
+    files: MAX_IMAGE_FILES,
+    fieldSize: MAX_IMAGE_AGGREGATE_BYTES,
+  },
 });
 
 const videoUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 },
+  limits: { fileSize: MAX_VIDEO_BYTES },
 });
 
 const router = Router();

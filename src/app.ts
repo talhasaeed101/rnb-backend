@@ -42,8 +42,8 @@ app.use(
   }),
 );
 app.use(morgan(env.nodeEnv === "production" ? "combined" : "dev"));
-app.use(express.json({ limit: "2mb" }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.get("/api/health", (_req, res) => {
   res.json({ success: true, message: "RNB API is running" });

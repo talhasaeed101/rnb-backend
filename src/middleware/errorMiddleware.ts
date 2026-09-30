@@ -53,11 +53,13 @@ export function errorHandler(
       code === "LIMIT_FILE_COUNT"
         ? "Too many images in one upload (max 24)"
         : code === "LIMIT_FILE_SIZE"
-          ? "An image is larger than 10MB"
-          : code === "LIMIT_UNEXPECTED_FILE"
-            ? "Unexpected upload field. Use images, image, or files."
-            : "Image upload failed";
-    return res.status(400).json({
+          ? "An image is larger than the 20MB limit (try resizing to 2000px before upload)"
+          : code === "LIMIT_FIELD_SIZE"
+            ? "Total upload size is too large (max 40MB — try fewer images or smaller sizes)"
+            : code === "LIMIT_UNEXPECTED_FILE"
+              ? "Unexpected upload field. Use images, image, or files."
+              : "Image upload failed";
+    return res.status(413).json({
       success: false,
       message,
       errors: [{ code }],
