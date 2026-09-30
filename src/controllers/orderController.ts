@@ -14,6 +14,7 @@ function mapOrder(doc: any) {
     customerId: obj.customer ? String(obj.customer) : "",
     customerName: obj.customerName,
     customerEmail: obj.customerEmail,
+    customerPhone: obj.customerPhone || "",
     items: (obj.items || []).map((item: any) => ({
       productId: item.product ? String(item.product) : "",
       name: item.name,

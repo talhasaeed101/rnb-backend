@@ -33,6 +33,7 @@ const orderSchema = new Schema(
     customer: { type: Schema.Types.ObjectId, ref: "Customer" },
     customerName: { type: String, required: true },
     customerEmail: { type: String, required: true, index: true },
+    customerPhone: { type: String, default: "" },
     items: { type: [orderItemSchema], default: [] },
     subtotal: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },

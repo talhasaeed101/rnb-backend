@@ -25,6 +25,7 @@ export const orderBodySchema = z.object({
   customer: z.string().optional(),
   customerName: z.string().min(1),
   customerEmail: z.string().email(),
+  customerPhone: z.string().optional().default(""),
   items: z.array(itemSchema).min(1),
   subtotal: z.number().min(0),
   discount: z.number().min(0).optional().default(0),
