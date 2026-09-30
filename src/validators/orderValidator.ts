@@ -12,7 +12,7 @@ const addressSchema = z.object({
 });
 
 const itemSchema = z.object({
-  product: z.string().optional(),
+  product: z.string().min(1, "Each item must include a valid product ID"),
   name: z.string().min(1),
   image: z.string().optional().default(""),
   quantity: z.number().int().min(1),

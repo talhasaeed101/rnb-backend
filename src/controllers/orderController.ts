@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Order } from "../models/Order.js";
 import { Product } from "../models/Product.js";
 import { AppError } from "../middleware/errorMiddleware.js";
@@ -115,15 +116,30 @@ export const createOrder = asyncHandler(async (req, res) => {
   const validatedItems = [];
   
   for (const item of body.items) {
-    const product = await Product.findById(item.product || item.productId);
+    const productId = item.product || item.productId;
+
+    // Validate that the productId is a valid MongoDB ObjectId before querying
+    if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
+      throw new AppError(
+        `Invalid product ID: "${productId}". Each item must have a valid product ID.`,
+        400
+      );
+    }
+
+    const product = await Product.findById(productId);
     if (!product) {
-      throw new AppError(`Product not found`, 404);
+      throw new AppError(`Product not found: ${productId}`, 404);
     }
     if (product.status !== "active") {
-      throw new AppError(`Product ${product.name} is not available`, 400);
+      throw new AppError(`Product "${product.name}" is not currently available`, 400);
     }
-    if (product.stock < item.quantity) {
-      throw new AppError(`Not enough stock for ${product.name}. Available: ${product.stock}`, 400);
+
+    const availableStock = product.stock ?? 0;
+    if (availableStock < item.quantity) {
+      throw new AppError(
+        `Not enough stock for "${product.name}". Available: ${availableStock}`,
+        400
+      );
     }
     
     const price = product.salePrice ?? product.price;
