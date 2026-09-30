@@ -24,6 +24,8 @@ const videoUpload = multer({
 
 const router = Router();
 router.use(protect);
+router.post("/presign", uploadController.presignUploads);
+router.post("/confirm", uploadController.confirmUploads);
 router.post("/images", imageUpload.any(), uploadController.uploadImages);
 router.post("/videos", videoUpload.single("video"), uploadController.uploadVideo);
 router.delete("/images", uploadController.deleteImage);
