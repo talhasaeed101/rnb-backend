@@ -185,6 +185,8 @@ export const createOrder = asyncHandler(async (req, res) => {
   await sendAdminOrderEmail({
     orderNumber: order.orderNumber,
     customerName: order.customerName,
+    customerEmail: order.customerEmail,
+    customerPhone: order.customerPhone || "",
     paymentMethod: order.paymentMethod === "cod" ? "Cash on Delivery" : "Bank Transfer",
     total: order.total,
     itemsCount: validatedItems.length,

@@ -51,15 +51,17 @@ function createTransport() {
 }
 
 async function sendMail(options: {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
   text: string;
+  bcc?: string | string[];
 }) {
   const transporter = createTransport();
   await transporter.sendMail({
     from: `"${env.smtp.fromName}" <${env.smtp.from}>`,
     to: options.to,
+    bcc: options.bcc,
     subject: options.subject,
     html: options.html,
     text: options.text,
@@ -136,9 +138,11 @@ export async function sendOrderEmail(options: {
       </p>
     `,
   );
+  const rnbEmail = env.admin.rnbNotifyEmail;
   try {
     await sendMail({
       to: options.to,
+      bcc: rnbEmail || undefined,
       subject: `Order ${options.status}: ${options.orderNumber}`,
       html,
       text: `Hi ${safeName}, your order ${options.orderNumber} is now ${options.status}. Total: Rs. ${options.total}`,
@@ -151,31 +155,41 @@ export async function sendOrderEmail(options: {
 export async function sendAdminOrderEmail(options: {
   orderNumber: string;
   customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
   paymentMethod: string;
   total: number;
   itemsCount: number;
 }) {
   const adminEmail = env.admin.email;
+  const rnbEmail = env.admin.rnbNotifyEmail;
+
+  // Build recipient list: admin + RNB Gmail (deduplicated)
+  const recipients = [...new Set([adminEmail, rnbEmail].filter(Boolean))];
+
   const html = brandWrapper(
     `New Order Received: ${options.orderNumber}`,
     `
-      <p style="margin:0 0 12px;font-size:16px;">Hello Admin,</p>
+      <p style="margin:0 0 12px;font-size:16px;">Hello,</p>
       <p style="margin:0 0 16px;font-size:14px;line-height:1.5;color:#333;">
-        A new order <strong>${options.orderNumber}</strong> was placed by ${options.customerName}.
+        A new order <strong>${options.orderNumber}</strong> has been placed.
       </p>
-      <ul>
-        <li>Payment: ${options.paymentMethod}</li>
-        <li>Total: Rs. ${options.total.toLocaleString()}</li>
-        <li>Items: ${options.itemsCount}</li>
-      </ul>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px;">
+        <tr><td style="padding:6px 0;color:#555;width:140px;">Customer</td><td style="padding:6px 0;font-weight:600;">${escapeHtml(options.customerName)}</td></tr>
+        <tr><td style="padding:6px 0;color:#555;">Email</td><td style="padding:6px 0;">${escapeHtml(options.customerEmail)}</td></tr>
+        ${options.customerPhone ? `<tr><td style="padding:6px 0;color:#555;">Phone</td><td style="padding:6px 0;">${escapeHtml(options.customerPhone)}</td></tr>` : ""}
+        <tr><td style="padding:6px 0;color:#555;">Payment</td><td style="padding:6px 0;">${escapeHtml(options.paymentMethod)}</td></tr>
+        <tr><td style="padding:6px 0;color:#555;">Items</td><td style="padding:6px 0;">${options.itemsCount}</td></tr>
+        <tr><td style="padding:6px 0;color:#555;">Total</td><td style="padding:6px 0;font-weight:700;color:#005AFA;">Rs. ${options.total.toLocaleString()}</td></tr>
+      </table>
     `,
   );
   try {
     await sendMail({
-      to: adminEmail,
-      subject: `New Order: ${options.orderNumber}`,
+      to: recipients,
+      subject: `New Order: ${options.orderNumber} — ${options.customerName}`,
       html,
-      text: `New order ${options.orderNumber} by ${options.customerName}.`,
+      text: `New order ${options.orderNumber} by ${options.customerName} (${options.customerEmail}). Payment: ${options.paymentMethod}. Total: Rs. ${options.total}.`,
     });
   } catch (err) {
     console.error("Admin order email error:", err);

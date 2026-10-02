@@ -59,6 +59,7 @@ export const env = {
     name: process.env.ADMIN_NAME || "RNB Admin",
     email: process.env.ADMIN_EMAIL || "admin@rnbcollections.com",
     password: process.env.ADMIN_PASSWORD || "Admin@123",
+    rnbNotifyEmail: process.env.RNB_NOTIFY_EMAIL || "rnbcollections.com@gmail.com",
   },
 };
 
